@@ -15,32 +15,6 @@ Text Domain: my-toolset
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
 
-// add_action('wp_enqueue_scripts', 'prefix_load_scripts');
-
-// function prefix_load_scripts() {                           
-//     $deps = array('jquery');
-//     $version= '1.0'; 
-//     $in_footer = true;    
-//     wp_enqueue_script('prefix-main-js', plugin_dir_url( __FILE__) . 'js/prefix-main.js', $deps, $version, $in_footer); 
-//     wp_enqueue_style( 'prefix-main-css', plugin_dir_url( __FILE__) . 'css/prefix-main.css');
-// }
-
-//******from h5p>admin>class-h5p-content-admin.php
-// $this->content = $plugin->get_content($id);
-//     if (!is_string($this->content)) {
-//       $tags = $wpdb->get_results($wpdb->prepare(
-//           "SELECT t.name
-//              FROM {$wpdb->prefix}h5p_contents_tags ct
-//              JOIN {$wpdb->prefix}h5p_tags t ON ct.tag_id = t.id
-//             WHERE ct.content_id = %d",
-//           $id
-//       ));
-//       $this->content['tags'] = '';
-//       foreach ($tags as $tag) {
-//         $this->content['tags'] .= ($this->content['tags'] !== '' ? ', ' : '') . $tag->name;
-//       }
-//     }
-//   }
 
 /*
 things to look at 
@@ -75,18 +49,18 @@ function h5p_gb_export_get_data(){
       $title = $result->title;
       $score = $result->score;
       $max = $result->max_score;
-      $opened = date("F j, Y, g:i a", $result->opened);
-      $finished = date("F j, Y, g:i a",$result->finished);
+      $opened = date(" d-m-Y, g:i a", $result->opened);
+      $finished = date("d-m-Y, g:i a",$result->finished);
       $percent = 0;
       $time = $result->time;
       if($score){
          $percent = $score/$max * 100 . '%';
-         $html .= "<tr><td>{$title}</td><td>$name</td><td>{$max}</td><td>{$score}</td><td>{$percent}</td><td>{$opened}</td><td>{$finished}</td><td>{$time}</td></tr>";
+         $html .= "<tr><td>{$title}</td><td>$name</td><td>{$max}</td><td>{$score}</td><td>{$percent}</td><td>{$opened}</td><td>{$finished}</td></tr>";
       }
      
    }
     echo "<table>
-    <tr><th>Assignment</th><th>Student</th><th>Max score</th><th>Score</th><th>Percent</th><th>Opened</th><th>Finished</th><th>Time</th></tr>
+    <tr><th>Title</th><th>Student</th><th>Max</th><th>Score</th><th>%</th><th>Start</th><th>Finish</th></tr>
             {$html}
             </table>";
 }
@@ -108,6 +82,40 @@ function h5p_gb_name_fetcher($user_id){
    return $user_info->display_name;
 
 }
+
+
+function h5p_gb_assignment_progress(){
+   if (is_user_logged_in() && get_current_user_id()){
+       global $post;
+      $user_id = get_current_user_id();
+      $content = $post->post_content;
+      $codes = preg_match_all( 
+          '/' . get_shortcode_regex() . '/', 
+          $content, 
+          $matches, 
+          PREG_SET_ORDER
+      );
+     // var_dump($matches);
+      $h5p_ids = array();
+      foreach ($matches as $key => $match) {
+         // code...
+        // var_dump($match[0]);
+         //var_dump(strpos($match[0], '[h5p id=', 0 ));
+         if(strpos($match[0], '[h5p id=', 0 ) === 0){
+            //echo $match[0];
+            preg_match('/h5p id="(\d+)/', $match[0], $h5p_id);
+            $the_id = $h5p_id[1]; 
+            array_push($h5p_ids, $the_id);
+         }
+      }
+      var_dump($user_id);
+      var_dump($h5p_ids);
+   }
+  
+}
+
+
+add_shortcode( 'h5p-progress', 'h5p_gb_assignment_progress' );
 
 
 //LOGGER -- like frogger but more useful
