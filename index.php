@@ -108,15 +108,35 @@ function h5p_gb_assignment_progress(){
             array_push($h5p_ids, $the_id);
          }
       }
-      var_dump($user_id);//SELECT * FROM wp_49_h5p_results WHERE user_id = 164 AND content_id IN (3,5)
-      var_dump($h5p_ids);
+      //var_dump($user_id);//SELECT * FROM wp_49_h5p_results WHERE user_id = 164 AND content_id IN (3,5)
+      //var_dump($h5p_ids);
+      h5p_gb_mysql_progress($user_id, $h5p_ids);
    }
   
+}
+
+function h5p_gb_mysql_progress($user_id, $h5p_ids){//$user_id, $assignment_ids
+   global $wpdb;    
+   $ids = implode(',',$h5p_ids);
+   $results = $wpdb->get_results( "
+       SELECT {$wpdb->prefix}h5p_results.user_id, {$wpdb->prefix}h5p_results.score, {$wpdb->prefix}h5p_results.content_id, {$wpdb->prefix}h5p_contents.title  
+       FROM {$wpdb->prefix}h5p_results 
+       RIGHT JOIN wp_49_h5p_contents
+       ON {$wpdb->prefix}h5p_contents.id = {$wpdb->prefix}h5p_results.content_id 
+       WHERE {$wpdb->prefix}h5p_results.user_id = {$user_id} AND {$wpdb->prefix}h5p_results.content_id IN ({$ids}) 
+       ");
+    var_dump($results);
 }
 
 
 add_shortcode( 'h5p-progress', 'h5p_gb_assignment_progress' );
 
+
+//SELECT wp_49_h5p_results.user_id, wp_49_h5p_results.score, wp_49_h5p_results.content_id, wp_49_h5p_contents.title 
+// FROM wp_49_h5p_results 
+// RIGHT JOIN wp_49_h5p_contents
+// ON wp_49_h5p_contents.id = wp_49_h5p_results.content_id 
+// WHERE wp_49_h5p_results.user_id = 164 AND wp_49_h5p_results.content_id IN (3,5)
 
 //LOGGER -- like frogger but more useful
 
