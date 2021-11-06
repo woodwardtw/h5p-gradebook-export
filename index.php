@@ -108,7 +108,7 @@ function h5p_gb_assignment_progress(){
             array_push($h5p_ids, $the_id);
          }
       }
-      var_dump($user_id);
+      var_dump($user_id);//SELECT * FROM wp_49_h5p_results WHERE user_id = 164 AND content_id IN (3,5)
       var_dump($h5p_ids);
    }
   
