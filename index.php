@@ -86,7 +86,7 @@ function h5p_gb_name_fetcher($user_id){
 
 function h5p_gb_assignment_progress(){
    if (is_user_logged_in() && get_current_user_id()){
-       global $post;
+      global $post;
       $user_id = get_current_user_id();
       $content = $post->post_content;
       $codes = preg_match_all( 
@@ -111,6 +111,8 @@ function h5p_gb_assignment_progress(){
       //var_dump($user_id);//SELECT * FROM wp_49_h5p_results WHERE user_id = 164 AND content_id IN (3,5)
       //var_dump($h5p_ids);
       h5p_gb_mysql_progress($user_id, $h5p_ids);
+   } else {
+      echo 'Please login.';
    }
   
 }
@@ -119,24 +121,41 @@ function h5p_gb_mysql_progress($user_id, $h5p_ids){//$user_id, $assignment_ids
    global $wpdb;    
    $ids = implode(',',$h5p_ids);
    $results = $wpdb->get_results( "
-       SELECT {$wpdb->prefix}h5p_results.user_id, {$wpdb->prefix}h5p_results.score, {$wpdb->prefix}h5p_results.content_id, {$wpdb->prefix}h5p_contents.title  
+       SELECT {$wpdb->prefix}h5p_results.user_id, {$wpdb->prefix}h5p_results.score, {$wpdb->prefix}h5p_results.score, {$wpdb->prefix}h5p_results.max_score, {$wpdb->prefix}h5p_results.content_id, {$wpdb->prefix}h5p_contents.title  
        FROM {$wpdb->prefix}h5p_results 
        RIGHT JOIN wp_49_h5p_contents
        ON {$wpdb->prefix}h5p_contents.id = {$wpdb->prefix}h5p_results.content_id 
        WHERE {$wpdb->prefix}h5p_results.user_id = {$user_id} AND {$wpdb->prefix}h5p_results.content_id IN ({$ids}) 
        ");
-    var_dump($results);
+    //var_dump($results);
+   $html = '';
+   foreach ($h5p_ids as $key => $h5p_id) {
+      $html .= h5p_gb_id_matcher($h5p_id,$results);
+   }
+   $count_ids = sizeof($h5p_ids);
+   $count_results = sizeof($results);
+   echo "<table>
+            <caption>Progress on this assignment {$count_results} of {$count_ids}</caption>
+            <tr><th>Title</th><th>Score</th><th>Max score</th></tr>
+            {$html}
+         </table>";
 }
-
 
 add_shortcode( 'h5p-progress', 'h5p_gb_assignment_progress' );
 
-
-//SELECT wp_49_h5p_results.user_id, wp_49_h5p_results.score, wp_49_h5p_results.content_id, wp_49_h5p_contents.title 
-// FROM wp_49_h5p_results 
-// RIGHT JOIN wp_49_h5p_contents
-// ON wp_49_h5p_contents.id = wp_49_h5p_results.content_id 
-// WHERE wp_49_h5p_results.user_id = 164 AND wp_49_h5p_results.content_id IN (3,5)
+function h5p_gb_id_matcher($id,$results){
+   foreach ($results as $key => $result) {
+      // code...
+      //var_dump($result);
+      $title = $result->title . ' - ' . $id;
+      $max_score = $result->max_score;
+     
+      if($id == $result->content_id){
+          $score = $result->score;
+         return "<tr class='taken'><td>{$title}</td><td>{$score}</td><td>{$max_score}</td></tr>";
+      } 
+   }
+}
 
 //LOGGER -- like frogger but more useful
 
