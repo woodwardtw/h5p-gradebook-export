@@ -129,30 +129,42 @@ function h5p_gb_mysql_progress($user_id, $h5p_ids){//$user_id, $assignment_ids
        ");
     //var_dump($results);
    $html = '';
+   $css_array = array();
    foreach ($h5p_ids as $key => $h5p_id) {
       $html .= h5p_gb_id_matcher($h5p_id,$results);
+      array_push($css_array,h5p_gb_id_css_wrapper($h5p_id,$results));
    }
    $count_ids = sizeof($h5p_ids);
    $count_results = sizeof($results);
+   $css = implode(', ', array_filter($css_array));
    echo "<table>
             <caption>Progress on this assignment {$count_results} of {$count_ids}</caption>
             <tr><th>Title</th><th>Score</th><th>Max score</th></tr>
             {$html}
-         </table>";
+         </table> <style>{$css} {border: 4px dashed green;}</style>";
 }
 
 add_shortcode( 'h5p-progress', 'h5p_gb_assignment_progress' );
 
-function h5p_gb_id_matcher($id,$results){
+function h5p_gb_id_matcher($h5p_id,$results){
    foreach ($results as $key => $result) {
       // code...
       //var_dump($result);
-      $title = $result->title . ' - ' . $id;
+      $title = $result->title . ' - ' . $h5p_id;
       $max_score = $result->max_score;
      
-      if($id == $result->content_id){
+      if($h5p_id == $result->content_id){
           $score = $result->score;
-         return "<tr class='taken'><td>{$title}</td><td>{$score}</td><td>{$max_score}</td></tr>";
+         return "<tr class='taken'><td><a href='#h5p-iframe-{$h5p_id}'>{$title}</a></td><td>{$score}</td><td>{$max_score}</td></tr>";
+      } 
+   }
+}
+
+function h5p_gb_id_css_wrapper($h5p_id,$results){
+   foreach ($results as $key => $result) {     
+      $css = '';
+      if($h5p_id == $result->content_id){
+         return "#h5p-iframe-{$h5p_id}";
       } 
    }
 }
