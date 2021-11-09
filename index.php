@@ -150,7 +150,7 @@ function h5p_gb_id_matcher($h5p_id,$results){
    foreach ($results as $key => $result) {
       // code...
       //var_dump($result);
-      $title = $result->title . ' - ' . $h5p_id;
+      $title = $result->title . ' (id=' . $h5p_id . ')';
       $max_score = $result->max_score;
      
       if($h5p_id == $result->content_id){
