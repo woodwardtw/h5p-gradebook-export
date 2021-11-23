@@ -14,58 +14,107 @@ Text Domain: my-toolset
 */
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
+//load up admin styles
+add_action('admin_enqueue_scripts', 'h5p_gb_css_and_js');
 
+function h5p_gb_css_and_js($hook)
+    {
 
-/*
-things to look at 
-https://github.com/cogdog/wp-posts2csv/blob/master/export-post-csv.php
+    $current_screen = get_current_screen();
+    if ( $current_screen->base == 'toplevel_page_hp5_gradebook') {
+        wp_enqueue_style('h5p_gb_css', plugins_url('css/h5_gb.css',__FILE__ ));
+        wp_enqueue_style('h5p_gb_datatables', 'https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css');
 
-SELECT wp_49_h5p_results.content_id,wp_49_h5p_results.user_id, wp_49_h5p_contents.title, wp_49_h5p_results.score, wp_49_h5p_results.max_score,wp_users.id, wp_users.display_name
-FROM wp_49_h5p_results
-RIGHT JOIN wp_49_h5p_contents
-ON wp_49_h5p_contents.id = wp_49_h5p_results.content_id 
-LEFT JOIN wp_users
-ON wp_users.id = wp_49_h5p_results.user_id
+        wp_enqueue_script('dataTables','https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js', ['jquery'], false, true);
+        wp_enqueue_script('dataTablesButtons','https://cdn.datatables.net/buttons/2.0.1/js/dataTables.buttons.min.js', ['dataTables'], false, true);
+        wp_enqueue_script('dataTablesJs','https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js', ['dataTables'], false, true);
+        wp_enqueue_script('dataTablesFonts','https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js', ['dataTables'], false, true);
+        wp_enqueue_script('dataTablesHTML5','https://cdn.datatables.net/buttons/2.0.1/js/buttons.html5.min.js', ['dataTables'], false, true);
+        
+        wp_enqueue_script('dataTablesPrint','https://cdn.datatables.net/buttons/2.0.1/js/buttons.print.min.js', ['dataTables'], false, true);
+        wp_enqueue_script('ln_script', plugins_url('js/h5p_gb.js', __FILE__), ['dataTables'], false, true);
+        }
+    }
+//make admin page
 
-*/
-
+add_action('admin_menu', 'h5p_gb_export_plugin_setup_menu');
+ 
+function h5p_gb_export_plugin_setup_menu(){
+    add_menu_page( 'H5P Gradebook', 'H5P Gradebook', 'see_grades', 'hp5_gradebook', 'h5p_gb_export_get_data' );
+}
+ 
 
 function h5p_gb_export_get_data(){
    global $wpdb;    
    $results = $wpdb->get_results( "
-       SELECT {$wpdb->prefix}h5p_results.content_id,{$wpdb->prefix}h5p_results.user_id,{$wpdb->prefix}h5p_results.opened, {$wpdb->prefix}h5p_results.finished, {$wpdb->prefix}h5p_results.time, {$wpdb->prefix}h5p_contents.title, {$wpdb->prefix}h5p_results.score, {$wpdb->prefix}h5p_results.max_score,wp_users.id, wp_users.display_name
+       SELECT {$wpdb->prefix}h5p_results.content_id,
+              {$wpdb->prefix}h5p_results.user_id,
+              {$wpdb->prefix}h5p_results.opened, 
+              {$wpdb->prefix}h5p_results.finished, 
+              {$wpdb->prefix}h5p_results.time, 
+              {$wpdb->prefix}h5p_contents.title,
+              {$wpdb->prefix}h5p_contents.id AS reliable_id, 
+              {$wpdb->prefix}h5p_results.score, 
+              {$wpdb->prefix}h5p_results.max_score,
+              wp_users.id,
+              wp_users.display_name
             FROM {$wpdb->prefix}h5p_results
             RIGHT JOIN {$wpdb->prefix}h5p_contents
             ON {$wpdb->prefix}h5p_contents.id = {$wpdb->prefix}h5p_results.content_id   
             LEFT JOIN wp_users
-            ON wp_users.id = {$wpdb->prefix}h5p_results.user_id
+            ON wp_users.id = {$wpdb->prefix}h5p_results.user_id          
        ");
-   //var_dump($results);
+   
    $html = '';
-   foreach ($results as $key => $result) {
+   foreach ($results as $key => $result) {      
       // code...
+      $content_id = $result->reliable_id;//h5p object id       
       $user_id = $result->user_id;
       $name = h5p_gb_name_fetcher($user_id);
       $title = $result->title;
+      $tag = h5p_gb_tag_getter($content_id);;
       $score = $result->score;
       $max = $result->max_score;
       $opened = date(" d-m-Y, g:i a", $result->opened);
       $finished = date("d-m-Y, g:i a",$result->finished);
       $percent = 0;
       $time = $result->time;
-      if($score){
+      if($score != null){
          $percent = $score/$max * 100 . '%';
-         $html .= "<tr><td>{$title}</td><td>$name</td><td>{$max}</td><td>{$score}</td><td>{$percent}</td><td>{$opened}</td><td>{$finished}</td></tr>";
+         $html .= "<tr><td>{$title}  - ${content_id}</td><td>{$tag}</td><td>{$name}</td><td>{$max}</td><td>{$score}</td><td>{$percent}</td><td>{$opened}</td><td>{$finished}</td></tr>";
       }
      
    }
-    echo "<table>
-    <tr><th>Title</th><th>Student</th><th>Max</th><th>Score</th><th>%</th><th>Start</th><th>Finish</th></tr>
+    echo "<table id='h5p_grades' class='display nowrap'>
+    <thead><tr><th>Title</th><th>Tags</th><th>Student</th><th>Max Pts</th><th>Score</th><th>%</th><th>Start</th><th>Finish</th></tr></thead><tbody>
             {$html}
-            </table>";
+            </tbody></table>";
 }
 
 add_shortcode( 'h5p-results', 'h5p_gb_export_get_data' );
+
+function h5p_gb_tag_getter($reliable_id){
+   global $wpdb;    
+   $results = $wpdb->get_results( "
+       SELECT 
+              {$wpdb->prefix}h5p_contents_tags.content_id,
+              {$wpdb->prefix}h5p_contents_tags.tag_id,
+              {$wpdb->prefix}h5p_tags.id, 
+              {$wpdb->prefix}h5p_tags.name
+            FROM {$wpdb->prefix}h5p_contents_tags           
+            LEFT JOIN {$wpdb->prefix}h5p_tags
+            ON {$wpdb->prefix}h5p_tags.id = {$wpdb->prefix}h5p_contents_tags.tag_id
+            WHERE {$wpdb->prefix}h5p_contents_tags.content_id = $reliable_id
+       ");
+   $tags = array();
+    foreach ($results as $key => $result) {  
+      //var_dump($result);
+      array_push($tags, $result->name);
+    }
+    $final_tags = implode(', ', $tags);
+    return  $final_tags;
+}
+
 
 function h5p_gb_name_fetcher($user_id){
    $user_info = $user_id ? new WP_User( $user_id ) : wp_get_current_user();
@@ -141,7 +190,7 @@ function h5p_gb_mysql_progress($user_id, $h5p_ids){//$user_id, $assignment_ids
             <caption>Progress on this assignment {$count_results} of {$count_ids}</caption>
             <tr><th>Title</th><th>Score</th><th>Max score</th></tr>
             {$html}
-         </table> <style>{$css} {border: 4px dashed green;}</style>";
+         </table> <style>{$css} {border-left: 12px solid green; border-top: 8px dashed green;}</style>";
 }
 
 add_shortcode( 'h5p-progress', 'h5p_gb_assignment_progress' );
@@ -180,5 +229,7 @@ if ( ! function_exists('write_log')) {
       }
    }
 }
+
+
 
   //print("<pre>".print_r($a,true)."</pre>");
