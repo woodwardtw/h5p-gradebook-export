@@ -12,3 +12,11 @@ td, th {
 tbody tr:nth-child(odd) {
   background: #dbe8ee;
 }
+
+.dt-buttons {
+	margin-top: 40px;
+}
+
+#h5p_grades_filter {
+	margin: 0 10px 20px 0;
+}
