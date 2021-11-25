@@ -35,85 +35,20 @@ function h5p_gb_css_and_js($hook)
         wp_enqueue_script('ln_script', plugins_url('js/h5p_gb.js', __FILE__), ['dataTables'], false, true);
         }
     }
-//make admin page
 
-add_action('admin_menu', 'h5p_gb_export_plugin_setup_menu');
- 
-function h5p_gb_export_plugin_setup_menu(){
-    add_menu_page( 'H5P Gradebook', 'H5P Gradebook', 'see_grades', 'hp5_gradebook', 'h5p_gb_export_get_data' );
-}
- 
 
-function h5p_gb_export_get_data(){
-   global $wpdb;    
-   $results = $wpdb->get_results( "
-       SELECT {$wpdb->prefix}h5p_results.content_id,
-              {$wpdb->prefix}h5p_results.user_id,
-              {$wpdb->prefix}h5p_results.opened, 
-              {$wpdb->prefix}h5p_results.finished, 
-              {$wpdb->prefix}h5p_results.time, 
-              {$wpdb->prefix}h5p_contents.title,
-              {$wpdb->prefix}h5p_contents.id AS reliable_id, 
-              {$wpdb->prefix}h5p_results.score, 
-              {$wpdb->prefix}h5p_results.max_score,
-              wp_users.id,
-              wp_users.display_name
-            FROM {$wpdb->prefix}h5p_results
-            RIGHT JOIN {$wpdb->prefix}h5p_contents
-            ON {$wpdb->prefix}h5p_contents.id = {$wpdb->prefix}h5p_results.content_id   
-            LEFT JOIN wp_users
-            ON wp_users.id = {$wpdb->prefix}h5p_results.user_id          
-       ");
-   
-   $html = '';
-   foreach ($results as $key => $result) {      
-      // code...
-      $content_id = $result->reliable_id;//h5p object id       
-      $user_id = $result->user_id;
-      $name = h5p_gb_name_fetcher($user_id);
-      $title = $result->title;
-      $tag = h5p_gb_tag_getter($content_id);;
-      $score = $result->score;
-      $max = $result->max_score;
-      $opened = date(" d-m-Y, g:i a", $result->opened);
-      $finished = date("d-m-Y, g:i a",$result->finished);
-      $percent = 0;
-      $time = $result->time;
-      if($score != null){
-         $percent = $score/$max * 100 . '%';
-         $html .= "<tr><td>{$title}  - ${content_id}</td><td>{$tag}</td><td>{$name}</td><td>{$max}</td><td>{$score}</td><td>{$percent}</td><td>{$opened}</td><td>{$finished}</td></tr>";
-      }
-     
-   }
-    echo "<table id='h5p_grades' class='display nowrap'>
-    <thead><tr><th>Title</th><th>Tags</th><th>Student</th><th>Max Pts</th><th>Score</th><th>%</th><th>Start</th><th>Finish</th></tr></thead><tbody>
-            {$html}
-            </tbody></table>";
+$h5p_gb_includes = array(
+   '/admin-display.php',
+   '/assignment-progress.php'
+);
+
+// Include files.
+foreach ( $h5p_gb_includes as $file ) {
+   require_once plugin_dir_path( __FILE__ ) . 'inc' . $file;
 }
 
-add_shortcode( 'h5p-results', 'h5p_gb_export_get_data' );
 
-function h5p_gb_tag_getter($reliable_id){
-   global $wpdb;    
-   $results = $wpdb->get_results( "
-       SELECT 
-              {$wpdb->prefix}h5p_contents_tags.content_id,
-              {$wpdb->prefix}h5p_contents_tags.tag_id,
-              {$wpdb->prefix}h5p_tags.id, 
-              {$wpdb->prefix}h5p_tags.name
-            FROM {$wpdb->prefix}h5p_contents_tags           
-            LEFT JOIN {$wpdb->prefix}h5p_tags
-            ON {$wpdb->prefix}h5p_tags.id = {$wpdb->prefix}h5p_contents_tags.tag_id
-            WHERE {$wpdb->prefix}h5p_contents_tags.content_id = $reliable_id
-       ");
-   $tags = array();
-    foreach ($results as $key => $result) {  
-      //var_dump($result);
-      array_push($tags, $result->name);
-    }
-    $final_tags = implode(', ', $tags);
-    return  $final_tags;
-}
+
 
 
 function h5p_gb_name_fetcher($user_id){
@@ -185,12 +120,12 @@ function h5p_gb_mysql_progress($user_id, $h5p_ids){//$user_id, $assignment_ids
    }
    $count_ids = sizeof($h5p_ids);
    $count_results = sizeof($results);
-   $css = implode(', ', array_filter($css_array));
+   $css = implode(' ', array_filter($css_array));
    echo "<table>
             <caption>Progress on this assignment {$count_results} of {$count_ids}</caption>
             <tr><th>Title</th><th>Score</th><th>Max score</th></tr>
             {$html}
-         </table> <style>{$css} {border-left: 12px solid green; border-top: 8px dashed green;}</style>";
+         </table> <style>{$css}</style>";
 }
 
 add_shortcode( 'h5p-progress', 'h5p_gb_assignment_progress' );
@@ -213,7 +148,8 @@ function h5p_gb_id_css_wrapper($h5p_id,$results){
    foreach ($results as $key => $result) {     
       $css = '';
       if($h5p_id == $result->content_id){
-         return "#h5p-iframe-{$h5p_id}";
+         return "#h5p-iframe-{$h5p_id} {border-left: 12px solid green; border-top: 8px dashed green;}
+                  #h5p-iframe-{$h5p_id}:after {content: 'foo'; width: 100%; height: 20px; text-align: center; display: block; background-color; red;}";
       } 
    }
 }
