@@ -14,6 +14,18 @@ Text Domain: my-toolset
 */
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
+//load up front end js
+add_action('wp_enqueue_scripts', 'h5p_gb_front_load_scripts');
+
+function h5p_gb_front_load_scripts() {                           
+    $deps = array('jquery');
+    $version= '1.0'; 
+    $in_footer = true;    
+    wp_enqueue_script('h5p-gb-assignment-js', plugin_dir_url( __FILE__) . 'js/h5p_gb_assignment.js', $deps, $version, $in_footer); 
+    //wp_enqueue_style( 'prefix-main-css', plugin_dir_url( __FILE__) . 'css/prefix-main.css');
+}
+
+
 //load up admin styles
 add_action('admin_enqueue_scripts', 'h5p_gb_css_and_js');
 
@@ -145,11 +157,13 @@ function h5p_gb_id_matcher($h5p_id,$results){
 }
 
 function h5p_gb_id_css_wrapper($h5p_id,$results){
-   foreach ($results as $key => $result) {     
+   foreach ($results as $key => $result) { 
+   $user_score = $result->score;
+   $max_score = $result->max_score;    
       $css = '';
       if($h5p_id == $result->content_id){
          return "#h5p-iframe-{$h5p_id} {border-left: 12px solid green; border-top: 8px dashed green;}
-                  #h5p-iframe-{$h5p_id}:after {content: 'foo'; width: 100%; height: 20px; text-align: center; display: block; background-color; red;}";
+                  #h5p-iframe-{$h5p_id}-holder:after {content: 'Current Score: {$user_score}/{$max_score}'; width: 100%; height: auto; text-align: center; display: block; border-left: 1px solid #424242;border-right: 1px solid #424242;border-bottom: 1px solid #424242;}";
       } 
    }
 }
