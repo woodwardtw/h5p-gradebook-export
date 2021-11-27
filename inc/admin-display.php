@@ -87,3 +87,19 @@ function h5p_gb_tag_getter($reliable_id){
     $final_tags = implode(', ', $tags);
     return  $final_tags;
 }
+
+function h5p_gb_name_fetcher($user_id){
+   $user_info = $user_id ? new WP_User( $user_id ) : wp_get_current_user();
+
+   if ( $user_info->first_name ) {
+
+      if ( $user_info->last_name ) {
+         return $user_info->last_name . ', ' . $user_info->first_name;
+      }
+
+      return $user_info->first_name;
+   }
+
+   return $user_info->display_name;
+
+}
