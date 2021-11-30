@@ -10,38 +10,37 @@ defined( 'ABSPATH' ) || exit;
 
 
 function h5p_gb_assignment_progress(){
-   if (is_user_logged_in() && get_current_user_id()){
+   if (is_user_logged_in() && get_current_user_id()){//get logged in user
       global $post;
       $user_id = get_current_user_id();
-      $content = $post->post_content;
+      $content = $post->post_content;//get content
       $codes = preg_match_all( 
           '/' . get_shortcode_regex() . '/', 
           $content, 
           $matches, 
           PREG_SET_ORDER
-      );
-     // var_dump($matches);
+      ); //find shortcodes in content
       $h5p_ids = array();
-      foreach ($matches as $key => $match) {
-         // code...
-        // var_dump($match[0]);
-         //var_dump(strpos($match[0], '[h5p id=', 0 ));
+      foreach ($matches as $key => $match) { //for each shortcode find the H5P shortcodes
+       
          if(strpos($match[0], '[h5p id=', 0 ) === 0){
             //echo $match[0];
             preg_match('/h5p id="(\d+)/', $match[0], $h5p_id);
             $the_id = $h5p_id[1]; 
-            array_push($h5p_ids, $the_id);
+            array_push($h5p_ids, $the_id);//put shortcode IDs in array
          }
       }
-      //var_dump($user_id);//SELECT * FROM wp_49_h5p_results WHERE user_id = 164 AND content_id IN (3,5)
-      //var_dump($h5p_ids);
       h5p_gb_mysql_progress($user_id, $h5p_ids);
    } else {
-      echo 'Please login.';
+      echo 'Please login.'; //if not logged in, request that they log in
    }
   
 }
 
+
+/*
+* does the mysql query and builds the display table based on the IDs returned by h5p_gb_assignment_progress
+*/
 function h5p_gb_mysql_progress($user_id, $h5p_ids){//$user_id, $assignment_ids
    global $wpdb;    
    $ids = implode(',',$h5p_ids);
@@ -52,7 +51,6 @@ function h5p_gb_mysql_progress($user_id, $h5p_ids){//$user_id, $assignment_ids
        ON {$wpdb->prefix}h5p_contents.id = {$wpdb->prefix}h5p_results.content_id 
        WHERE {$wpdb->prefix}h5p_results.user_id = {$user_id} AND {$wpdb->prefix}h5p_results.content_id IN ({$ids}) 
        ");
-    //var_dump($results);
    $html = '';
    $css_array = array();
    foreach ($h5p_ids as $key => $h5p_id) {
@@ -63,18 +61,18 @@ function h5p_gb_mysql_progress($user_id, $h5p_ids){//$user_id, $assignment_ids
    $count_results = sizeof($results);
    $css = implode(' ', array_filter($css_array));
    echo "<table>
-            <caption>Progress on this assignment {$count_results} of {$count_ids}</caption>
+            <caption>Progress on this assignment: {$count_results} of {$count_ids}</caption>
             <tr><th>Title</th><th>Score</th><th>Max score</th></tr>
             {$html}
          </table> <style>{$css}</style>";
 }
 
-add_shortcode( 'h5p-progress', 'h5p_gb_assignment_progress' );
+add_shortcode( 'h5p-progress', 'h5p_gb_assignment_progress' );//[h5p-progress] shortcode for assignment pages
+
+
 
 function h5p_gb_id_matcher($h5p_id,$results){
-   foreach ($results as $key => $result) {
-      // code...
-      //var_dump($result);
+   foreach ($results as $key => $result) {     
       $title = $result->title . ' (id=' . $h5p_id . ')';
       $max_score = $result->max_score;
      
@@ -85,14 +83,19 @@ function h5p_gb_id_matcher($h5p_id,$results){
    }
 }
 
+/*
+* builds the CSS that shows the assignments that have been attempted
+*
+*/
+
 function h5p_gb_id_css_wrapper($h5p_id,$results){
    foreach ($results as $key => $result) { 
    $user_score = $result->score;
    $max_score = $result->max_score;    
       $css = '';
       if($h5p_id == $result->content_id){
-         return "#h5p-iframe-{$h5p_id} {border-left: 12px solid green; border-top: 8px dashed green;}
-                  #h5p-iframe-{$h5p_id}-holder:after {content: 'Current Score: {$user_score}/{$max_score}'; width: 100%; height: auto; text-align: center; display: block; border-left: 1px solid #424242;border-right: 1px solid #424242;border-bottom: 1px solid #424242;}";
+         return "#h5p-iframe-{$h5p_id} {border-left: 12px solid #424242; border-top: 8px dashed #424242;}
+                  #h5p-iframe-{$h5p_id}-holder:after {content: 'Last Score: {$user_score}/{$max_score}'; width: 100%; height: auto; text-align: center; display: block; border-left: 12px solid #424242;border-right: 1px solid #424242;border-bottom: 12px solid #424242;}"; //-holder css div is based on ID created by js
       } 
    }
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin display
+ * Admin gradebook display
  *
  * @package Understrap
  */
@@ -8,7 +8,9 @@
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
-//make admin page
+/*
+* make admin page
+*/
 
 add_action('admin_menu', 'h5p_gb_export_plugin_setup_menu');
  
@@ -16,6 +18,11 @@ function h5p_gb_export_plugin_setup_menu(){
     add_menu_page( 'H5P Gradebook', 'H5P Gradebook', 'see_grades', 'hp5_gradebook', 'h5p_gb_export_get_data' );
 }
  
+
+
+/*
+* get data from mysql for gradebook display
+*/
 
 function h5p_gb_export_get_data(){
    global $wpdb;    
@@ -64,7 +71,12 @@ function h5p_gb_export_get_data(){
             </tbody></table>";
 }
 
-add_shortcode( 'h5p-results', 'h5p_gb_export_get_data' );
+add_shortcode( 'h5p-results', 'h5p_gb_export_get_data' ); //shortcode which we might not need/want any more
+
+
+/*
+* second mysql query to get the assignment tags 
+*/
 
 function h5p_gb_tag_getter($reliable_id){
    global $wpdb;    
@@ -87,6 +99,11 @@ function h5p_gb_tag_getter($reliable_id){
     $final_tags = implode(', ', $tags);
     return  $final_tags;
 }
+
+
+/*
+* get student name, try to get first/last then fall back to display name
+*/
 
 function h5p_gb_name_fetcher($user_id){
    $user_info = $user_id ? new WP_User( $user_id ) : wp_get_current_user();
