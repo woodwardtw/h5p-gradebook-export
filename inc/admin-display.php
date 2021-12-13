@@ -65,7 +65,7 @@ function h5p_gb_export_get_data(){
       }
      
    }
-    echo "<table id='h5p_grades' class='display nowrap'>
+    echo "<h1>H5P Scores</h1><table id='h5p_grades' class='display nowrap'>
     <thead><tr><th>Title</th><th>Tags</th><th>Student</th><th>Max Pts</th><th>Score</th><th>%</th><th>Start</th><th>Finish</th></tr></thead><tbody>
             {$html}
             </tbody></table>";

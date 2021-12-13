@@ -2,7 +2,7 @@
 /*
 Plugin Name: H5P Gradebook Export
 Plugin URI:  https://github.com/
-Description: To get your H5P gradebook out as an Excel document - [h5p-progress] shortcode for assignment pages
+Description: To get your H5P gradebook out as an Excel document - [h5p-progress] shortcode for assignment pages funded by Lansing Community College
 Version:     1.0
 Author:      Tom Woodward
 Author URI:  https://tomwoodward.us
@@ -22,7 +22,7 @@ function h5p_gb_front_load_scripts() {
     $version= '1.0'; 
     $in_footer = true;    
     wp_enqueue_script('h5p-gb-assignment-js', plugin_dir_url( __FILE__) . 'js/h5p_gb_assignment.js', $deps, $version, $in_footer); 
-    //wp_enqueue_style( 'h5p-front-main-css', plugin_dir_url( __FILE__) . 'css/h5p-gb-front.css');
+    wp_enqueue_style( 'h5p-front-main-css', plugin_dir_url( __FILE__) . 'css/h5p-gb-front.css');
 }
 
 
@@ -36,6 +36,7 @@ function h5p_gb_css_and_js($hook)
     if ( $current_screen->base == 'toplevel_page_hp5_gradebook') {
         wp_enqueue_style('h5p_gb_css', plugins_url('css/h5_gb.css',__FILE__ ));
         wp_enqueue_style('h5p_gb_datatables', plugins_url('css/jquery.dataTables.min.css', __FILE__));
+        wp_enqueue_style('h5p_gb_buttons', plugins_url('css/buttons.dataTables.min.css', __FILE__));
 
         wp_enqueue_script('dataTables', plugins_url('js/jquery.dataTables.min.js', __FILE__), ['jquery'], false, true);
         wp_enqueue_script('dataTablesButtons', plugins_url('js/dataTables.buttons.min.js', __FILE__) , ['dataTables'], false, true);

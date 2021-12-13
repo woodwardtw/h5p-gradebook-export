@@ -1,0 +1,27 @@
+#h5p_progress_table {
+  border-collapse: collapse;
+  margin:  30px auto;
+  max-width:  100%;
+  width:  100%;
+}
+
+#h5p_progress_table td, #h5p_progress_table th {
+  border: 1px solid #999;
+  padding: 2px 5px;
+  text-align: left;
+  font-size: .8em;
+}
+
+#h5p_progress_table tbody tr:nth-child(odd) {
+  background: #dbe8ee;
+}
+
+.h5p-gb-reminder {
+  border:  1px solid red;
+  padding:  2px 10px;
+  margin:  5px;
+  display: block;
+  width: 100%;
+  font-size: 16px;
+  line-height: 1.1;
+}

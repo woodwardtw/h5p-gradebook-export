@@ -20,3 +20,22 @@ tbody tr:nth-child(odd) {
 #h5p_grades_filter {
 	margin: 0 10px 20px 0;
 }
+
+#h5p_grades_filter::before {
+  content:  'Export Options';
+  position: absolute;
+  font-size: 1.3em;
+  left:  0;
+  top:  10px;
+}
+
+#h5p_grades::before {
+  content: 'Click on the column titles to sort your data.';
+  display: block;
+  font-size:  .9em;
+  position: absolute;
+  top: -20px;
+  width: 250px;
+  left: calc(50% - 5px);
+  margin-left: -115px;
+}

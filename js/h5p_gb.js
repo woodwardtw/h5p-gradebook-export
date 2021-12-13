@@ -5,9 +5,16 @@ jQuery(document).ready(function() {
         pageLength: 100,
         dom: 'Bfrtip',
         buttons: [
-            'copyHtml5',
-            'excelHtml5',
-            'csvHtml5'
+            'copy',
+            {
+              extend: 'excelHtml5',
+              header: false,
+              title: null
+            },{
+              extend: 'csvHtml5',
+              header: false,
+              title: null
+            }          
         ]
     } );
 } );

@@ -30,7 +30,7 @@ function h5p_gb_assignment_progress(){
             array_push($h5p_ids, $the_id);//put shortcode IDs in array
          }
       }
-      h5p_gb_mysql_progress($user_id, $h5p_ids);
+      return h5p_gb_mysql_progress($user_id, $h5p_ids);
    } else {
       echo 'Please login.'; //if not logged in, request that they log in
    }
@@ -47,7 +47,7 @@ function h5p_gb_mysql_progress($user_id, $h5p_ids){//$user_id, $assignment_ids
    $results = $wpdb->get_results( "
        SELECT {$wpdb->prefix}h5p_results.user_id, {$wpdb->prefix}h5p_results.score, {$wpdb->prefix}h5p_results.score, {$wpdb->prefix}h5p_results.max_score, {$wpdb->prefix}h5p_results.content_id, {$wpdb->prefix}h5p_contents.title  
        FROM {$wpdb->prefix}h5p_results 
-       RIGHT JOIN wp_49_h5p_contents
+       RIGHT JOIN {$wpdb->prefix}h5p_contents
        ON {$wpdb->prefix}h5p_contents.id = {$wpdb->prefix}h5p_results.content_id 
        WHERE {$wpdb->prefix}h5p_results.user_id = {$user_id} AND {$wpdb->prefix}h5p_results.content_id IN ({$ids}) 
        ");
@@ -60,10 +60,11 @@ function h5p_gb_mysql_progress($user_id, $h5p_ids){//$user_id, $assignment_ids
    $count_ids = sizeof($h5p_ids);
    $count_results = sizeof($results);
    $css = implode(' ', array_filter($css_array));
-   echo "<table>
-            <caption>Progress on this assignment: {$count_results} of {$count_ids}</caption>
-            <tr><th>Title</th><th>Score</th><th>Max score</th></tr>
-            {$html}
+   return "<div class='h5p-gb-reminder'>After completing H5P items, please refresh the page to see most recent scores.</div>
+            <table id='h5p_progress_table'>
+               <caption>Progress: {$count_results} out of {$count_ids} attempted</caption>
+               <tr><th>Title</th><th>Score</th><th>Max score</th></tr>
+               {$html}
          </table> <style>{$css}</style>";
 }
 
@@ -73,7 +74,7 @@ add_shortcode( 'h5p-progress', 'h5p_gb_assignment_progress' );//[h5p-progress] s
 
 function h5p_gb_id_matcher($h5p_id,$results){
    foreach ($results as $key => $result) {     
-      $title = $result->title . ' (id=' . $h5p_id . ')';
+      $title = $result->title;
       $max_score = $result->max_score;
      
       if($h5p_id == $result->content_id){
