@@ -46,23 +46,26 @@ function h5p_gb_export_get_data(){
        ");
    
    $html = '';
+   global $current_blog;
    foreach ($results as $key => $result) {      
       // code...
-      $content_id = $result->reliable_id;//h5p object id       
-      $user_id = $result->user_id;
-      $name = h5p_gb_name_fetcher($user_id);
-      $title = $result->title;
-      $tag = h5p_gb_tag_getter($content_id);;
-      $score = $result->score;
-      $max = $result->max_score;
-      $opened = date(" d-m-Y, g:i a", $result->opened);
-      $finished = date("d-m-Y, g:i a",$result->finished);
-      $percent = 0;
-      $time = $result->time;
-      if($score != null){
-         $percent = $score/$max * 100 . '%';
-         $html .= "<tr><td>{$title}  - ${content_id}</td><td>{$tag}</td><td>{$name}</td><td>{$max}</td><td>{$score}</td><td>{$percent}</td><td>{$opened}</td><td>{$finished}</td></tr>";
-      }
+    if(is_user_member_of_blog($result->user_id, $current_blog->blog_id)){
+         $content_id = $result->reliable_id;//h5p object id       
+          $user_id = $result->user_id;
+          $name = h5p_gb_name_fetcher($user_id) . ' - ' . $result->user_id;
+          $title = $result->title;
+          $tag = h5p_gb_tag_getter($content_id);;
+          $score = $result->score;
+          $max = $result->max_score;
+          $opened = date(" d-m-Y, g:i a", $result->opened);
+          $finished = date("d-m-Y, g:i a",$result->finished);
+          $percent = 0;
+          $time = $result->time;
+          if($score != null){
+             $percent = $score/$max * 100 . '%';
+             $html .= "<tr><td>{$title}  - ${content_id}</td><td>{$tag}</td><td>{$name}</td><td>{$max}</td><td>{$score}</td><td>{$percent}</td><td>{$opened}</td><td>{$finished}</td></tr>";
+          }
+        }     
      
    }
     echo "<h1>H5P Scores</h1><table id='h5p_grades' class='display nowrap'>
