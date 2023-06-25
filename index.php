@@ -51,7 +51,8 @@ function h5p_gb_css_and_js($hook)
 
 $h5p_gb_includes = array(
    '/admin-display.php',
-   '/assignment-progress.php'
+   '/assignment-progress.php',
+   '/clear-results.php'
 );
 
 // Include files.

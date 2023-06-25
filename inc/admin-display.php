@@ -72,6 +72,10 @@ function h5p_gb_export_get_data(){
     <thead><tr><th>Title</th><th>Tags</th><th>Student</th><th>Max Pts</th><th>Score</th><th>%</th><th>Start</th><th>Finish</th></tr></thead><tbody>
             {$html}
             </tbody></table>";
+    $user_id = get_current_user_id();
+    if(is_super_admin($user_id)){
+        echo "<button id='erase-h5p'>Erase all grades</button>";
+    }
 }
 
 add_shortcode( 'h5p-results', 'h5p_gb_export_get_data' ); //shortcode which we might not need/want any more
